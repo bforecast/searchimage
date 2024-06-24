@@ -1,0 +1,15 @@
+__pycache__
+.streamlit
+*.ipynb
+try_*
+*.pickle
+*.pyc
+.DS_Store
+*.h5
+.vscode
+.venv
+*.jpg
+*.pdf
+.env
+*.png
+
