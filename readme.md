@@ -1,6 +1,7 @@
 # Search text from image using Gemini
 
-    SearchImage is a Streamlit-based application that allows users to search text from image/pdf with a conversational AI model trained. The chatbot extracts information from uploaded PDF files and get the data focused by user.
+   SearchImage is a Streamlit-based application that allows users to search text from Image/PDF file using LLM.
+   The App extracts information from uploaded Image/Pdf files and get the data focused by user.
 
 
 ## Features
