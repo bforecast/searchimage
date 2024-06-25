@@ -47,7 +47,7 @@ def main():
                 pil_image = Image.open(uploaded_file)
 
             elif file_type == "application/pdf":
-                doc = fitz.open(uploaded_file)
+                doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
                 for page in doc:  # iterate through the pages
                     pixmap = page.get_pixmap()  # render page to an image
                     pil_image =  Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
