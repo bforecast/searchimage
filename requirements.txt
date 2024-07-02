@@ -1,4 +1,12 @@
 streamlit
 google-generativeai
 pyMuPDF
-dotenv
+python-dotenv
+llama-index
+# llama-index-vector-stores-elasticsearch
+llama-index-storage-docstore-mongodb
+llama-index-storage-index-store-mongodb
+motor
+llama_index-llms-ollama
+llama_index-embeddings-huggingface
+llama-index-vector-stores-chroma

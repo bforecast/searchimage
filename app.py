@@ -89,8 +89,6 @@ def main():
         st.session_state.source_folder =  os.path.join(cwd, "source_pdf")
     if 'dest_folder' not in st.session_state:
         st.session_state.dest_folder = os.path.join(cwd, "dest_pdf")
-    # source_folder = st.session_state.get("source_folder", None)
-    # dest_folder = st.session_state.get("dest_folder", None)
     col1, col2 = st.columns([1,4])
     with col1:
         if st.button("Select", key="source_select_button"):

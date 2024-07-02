@@ -12,3 +12,4 @@ try_*
 *.pdf
 .env
 *.png
+chroma_db
