@@ -24,20 +24,27 @@
    pip install -r requirements.txt
    ```
 
-3. **Set up Google API Key:**
+3. **Set up API Key:**
    - Obtain a Google API key and set it in the `.env` file.
    ```bash
    GOOGLE_API_KEY=your_api_key_here
+    - Obtain a OpenAI API key and set it in the `.env` file.
+   ```bash  
+   OPENAI_API_KEY = "sk-
    ```
 
-4. **Run the Application:**
+4. **install mongodb in docker:**
+   install_stores.bat
+   ```
+
+5. **Run the Application:**
    ```bash
    streamlit run app.py
    ```
 
 ## Project Structure
 
-- `app.py`: Main application script.
+- `Home.py`: Main application script.
 - `.env`: file which will contain your environment variable.
 - `requirements.txt`: Python packages required for working of the app.
 - `README.md`: Project documentation.
@@ -48,6 +55,9 @@
 - Streamlit
 - google.generativeai
 - dotenv
+- unstructured
+- unstructured.paddleocr
+
 
 ## Acknowledgments
 

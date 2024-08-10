@@ -13,3 +13,11 @@ try_*
 .env
 *.png
 chroma_db
+db
+tmp
+storage
+source_pdf
+json
+income
+dest_pdf
+lib

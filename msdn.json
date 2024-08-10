@@ -1,0 +1,59 @@
+{
+  "category": "sheet",
+  "content": {
+    "title": "Material Safety Data Sheet",
+    "product_code": "0261, 10273, 0255 (10274)",
+    "product_name": "TSP-90 Heavy Duty Cleaner",
+    "sections": [
+      {
+        "section_number": 1,
+        "section_title": "Product Name & Manufacturer Information",
+        "manufacturer": {
+          "name": "Savogran Company",
+          "address": "259 Lenox Street, Norwood, MA 02062",
+          "phone": "781-762-5400",
+          "emergency_phone": "800-424-9300 (CHEMTREC)"
+        }
+      },
+      {
+        "section_number": 2,
+        "section_title": "Composition / Hazardous Ingredients",
+        "ingredients": [
+          {
+            "name": "Sodium Metasilicate",
+            "cas_number": "6834-92-0",
+            "percentage": "30-40%"
+          },
+          {
+            "name": "Sodium Carbonate",
+            "cas_number": "497-19-8",
+            "percentage": "30-40%"
+          },
+          {
+            "name": "Sodium Tripolyphosphate",
+            "cas_number": "7758-29-4",
+            "percentage": "20-30%"
+          }
+        ]
+      },
+      {
+        "section_number": 3,
+        "section_title": "Hazards Identification",
+        "hazards": [
+          "Causes severe skin burns and eye damage.",
+          "May cause respiratory irritation."
+        ]
+      },
+      {
+        "section_number": 4,
+        "section_title": "First Aid Measures",
+        "first_aid_measures": {
+          "inhalation": "Move to fresh air. If breathing is difficult, give oxygen. Get medical attention.",
+          "skin_contact": "Wash with plenty of soap and water. Remove contaminated clothing. Get medical attention.",
+          "eye_contact": "Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing. Get medical attention.",
+          "ingestion": "Rinse mouth. Do NOT induce vomiting. Get medical attention."
+        }
+      }
+    ]
+  }
+}

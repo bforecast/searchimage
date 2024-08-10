@@ -92,7 +92,7 @@ def run():
     
     # select Source/Destination paths of local machine
     in_path =  os.path.join(cwd, "income")
-    storage_path = os.path.join(cwd, "storage")
+    storage_path = os.path.join(cwd, "storage/pdf")
 
 
     file_types = get_files_with_type(in_path)
@@ -111,7 +111,6 @@ def run():
                     images.append(pixmap)
 
                     pil_image =  Image.frombytes("RGB", [pixmap.width, pixmap.height], pixmap.samples)
-                    st.write(pil_image)
                     st.write(f"Extracting file {filename}")
                     result = extract2json_gemini(pil_image)
                     ocr_results.append(result)
@@ -127,11 +126,8 @@ def run():
                         st.success(f"Extract by LLM sucessfully")
                     else:
                         st.error(f"Fail to extranct by LLM.")
-                        break
-                    # according first page to rename a new filename
-                    # if i == 0:
-                    #     newFileName = result['product_number'] + '(' + result['issue_date'] + ').pdf'
-                    #     newFileName = fix_filename(newFileName)
+                        continue
+
                 doc.close()
                 # Create a new PDF document
                 new_doc = fitz.open()
@@ -139,7 +135,8 @@ def run():
                 # Add pages with OCR text
                 for i in range(len(images)):
                     new_page = new_doc.new_page()
-                    new_page.insert_image(fitz.Rect(0, 0, pixmap.width, pixmap.height), pixmap = images[i])
+                    st.write(fitz.Rect(0, 0, images[i].width, images[i].height))
+                    new_page.insert_image(fitz.Rect(0, 0, images[i].width, images[i].height), pixmap = images[i])
 
                     # Add OCR text (adjust formatting as needed)
                     ocr_text = ocr_results[i]
