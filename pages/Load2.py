@@ -1,33 +1,11 @@
 import streamlit as st
-from PIL import Image
-import tkinter as tk
-from tkinter import filedialog
-
 import os
-import io
 import mimetypes
-import shutil
-import re
-
-
 from dotenv import load_dotenv
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
-import json
-
-from utils.llamaindex import llamaindex_base, iPdfRAG
+from utils.llamaindex import iPdfRAG
 
 load_dotenv()
 cwd = os.getcwd()
-   
-def select_folder():
-   root = tk.Tk()
-   root.withdraw()
-   folder = filedialog.askdirectory(master=root)
-   root.destroy()
-   return folder
-import os
-
 
 def get_files_with_type(directory):
   """
@@ -53,12 +31,7 @@ def get_files_with_type(directory):
 def run():
     st.title("Extract Image pdfs to Document, Build Document Agent for each Document.")
     st.subheader('Made with ❤️ by Ruan')
-    
-    # select Source/Destination paths of local machine
     iPdf_path =  os.path.join(cwd, "image_pdf")
-    # storage_path = os.path.join(cwd, "storage/pdf")
-
-
     file_types = get_files_with_type(iPdf_path)
     st.write(file_types)
     if st.button("Extract and Save"):
@@ -66,6 +39,5 @@ def run():
             num_docs = iPdf.load(iPdf_path)
             if num_docs:
                 st.success(f"Save {num_docs} pdfs to llamaindex base.")
-
 
 run()

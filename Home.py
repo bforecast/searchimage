@@ -1,6 +1,9 @@
-from utils.llamaindex import llamaindex_base, iPdfRAG
 import streamlit as st
 import base64
+import fitz  # Install with: pip install pymupdf
+import io
+from PIL import Image
+from utils.llamaindex import llamaindex_base, iPdfRAG
 
 #function to display the PDF of a given file 
 def displayPDF(file:str):
@@ -23,11 +26,6 @@ def displayImageinPDF(node):
                             node.metadata['page_height']
                             )
     st.image(img_byte, caption=f"{node.metadata['filename']}, Page {node.metadata['page_number']}")
-    
-
-import fitz  # Install with: pip install pymupdf
-import io
-from PIL import Image, ImageDraw
 
 def imageFromPdf(pdf_path, page_number, coord_string, page_width, page_height):
     # Open the PDF
@@ -79,18 +77,16 @@ if "messages" not in st.session_state.keys(): # Initialize the chat messages his
 @st.cache_resource(show_spinner=False)
 def load_data():
     with st.spinner(text="Loading and indexing the Streamlit docs – hang tight! This should take 1-2 minutes."):
-        # pdf_base = llamaindex_base()
-        # index = pdf_base.index
         pdf_base = iPdfRAG()
         return pdf_base
 
 pdf_base = load_data()
+##Query-Search Mode
 col1,col2 = st.columns([9, 1])
 with col1:
     query = st.text_input("What would you like to ask?",value="I want to develop a product in washing and lye peeling of fruits. provide the composition ingredients and similiar products name")
 with col2:
     top_k = st.slider("Top-K", value=3, max_value=100)
-# If the 'Submit' button is clicked
 if st.button("Search"):
     if not query.strip():
         st.error(f"Please provide the search query.")
@@ -116,12 +112,9 @@ if st.button("Search"):
                         # displayPDF(node.metadata['file_path'])
                         # displayPDF(source_node.metadata['filename'])
                         displayImageinPDF(node)
-                        
-
-
-
+##Chat-Bot Mode
 if "chat_engine" not in st.session_state.keys(): # Initialize the chat engine
-    st.session_state.chat_engine = pdf_base.vector_index.as_chat_engine(verbose=True)
+    st.session_state.chat_engine = pdf_base.vector_index.as_chat_engine(verbose=True,)
 
 if prompt := st.chat_input("Your question"): # Prompt for user input and save to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -154,21 +147,3 @@ if st.session_state.messages[-1]["role"] != "assistant":
                         displayImageinPDF(node)
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message) # Add response to message history
-
-# st.write("should use CP-2000W agent -> vector tool")
-# query_string = "Tell me about the address of CP-2000W"
-# st.write(f"Question: {query_string}")
-# response = pdf_base.vector_query(query_string)
-# st.success(response)
-# st.write("For reference:")
-# for idx, source_node in enumerate(response.source_nodes):
-#     st.write(f"{idx+1}. {source_node.get_content()}")
-
-# st.write("should use CP-2000W agent -> summary tool")
-# query_string = "Give me a summary on all the positive aspects of CP-2000W"
-# st.write(f"Question: {query_string}")
-# response = pdf_base.vector_query(query_string)
-# st.success(response)
-# st.write("For reference:")
-# for idx, source_node in enumerate(response.source_nodes):
-#     st.write(f"{idx+1}. {source_node.get_content()}")

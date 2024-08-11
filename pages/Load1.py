@@ -1,18 +1,12 @@
 import streamlit as st
 from PIL import Image
-import tkinter as tk
-from tkinter import filedialog
 
 import os
-import io
 import mimetypes
 import shutil
 import re
 
-
 from dotenv import load_dotenv
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import json
 import fitz  # PyMuPDF library
 
@@ -21,14 +15,6 @@ from utils.llamaindex import llamaindex_base
 load_dotenv()
 cwd = os.getcwd()
 from utils.llm import extract2json_gemini
-   
-def select_folder():
-   root = tk.Tk()
-   root.withdraw()
-   folder = filedialog.askdirectory(master=root)
-   root.destroy()
-   return folder
-import os
 
 
 def get_files_with_type(directory):

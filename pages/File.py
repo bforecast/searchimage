@@ -1,18 +1,6 @@
 import streamlit as st
 from PIL import Image
-import tkinter as tk
-from tkinter import filedialog
-
-import os
-import io
-from dotenv import load_dotenv
-# from extract_thinker.llm import LLM
-# from extract_thinker import DocumentLoaderTesseract
-# from extract_thinker.extractor import Extractor
-
-import json
 import fitz  # PyMuPDF library
-
 from utils.llm import extract_with_gemini
 
 # Streamlit app
