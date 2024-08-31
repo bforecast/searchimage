@@ -1,21 +1,8 @@
 import streamlit as st
-import base64
 import fitz  # Install with: pip install pymupdf
 import io
 from PIL import Image
-from utils.llamaindex import llamaindex_base, iPdfRAG
-
-#function to display the PDF of a given file 
-def displayPDF(file:str):
-    # Opening file from file path. this is used to open the file from a website rather than local
-    with open(file, "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-
-    # Embedding PDF in HTML
-    pdf_display = F'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="950" type="application/pdf"></iframe>'
-
-    # Displaying File
-    st.markdown(pdf_display, unsafe_allow_html=True)
+from utils.llamaindex import iPdfRAG
 
 def displayImageinPDF(node):
     img_byte = imageFromPdf(
@@ -81,37 +68,6 @@ def load_data():
         return pdf_base
 
 pdf_base = load_data()
-##Query-Search Mode
-col1,col2 = st.columns([9, 1])
-with col1:
-    query = st.text_input("What would you like to ask?",value="I want to develop a product in washing and lye peeling of fruits. provide the composition ingredients and similiar products name")
-with col2:
-    top_k = st.slider("Top-K", value=3, max_value=100)
-if st.button("Search"):
-    if not query.strip():
-        st.error(f"Please provide the search query.")
-    else:
-        st.write(f"Question: {query}")
-        st.write("Answer:")
-        response = pdf_base.vector_query(query, top_k)
-        st.success(response)
-        if len(response.source_nodes) > 0:
-            st.write("For reference:")
-            for idx, node in enumerate(response.source_nodes):
-                if "filename" in node.metadata:
-                    col0, col1, col2 = st.columns([0.1,2,1])
-                    with col0:
-                        st.write(f"{idx+1}." )
-                    with col1:
-                        if all(tag in node.get_content() for tag in ['<table>', '<tr>', '<td>']):
-                            st.html(node.get_content())
-                        else:
-                            st.write(node.get_content())
-                        st.write(f"Score: {node.score}")
-                    with col2:
-                        # displayPDF(node.metadata['file_path'])
-                        # displayPDF(source_node.metadata['filename'])
-                        displayImageinPDF(node)
 ##Chat-Bot Mode
 if "chat_engine" not in st.session_state.keys(): # Initialize the chat engine
     st.session_state.chat_engine = pdf_base.vector_index.as_chat_engine(verbose=True,)
@@ -142,8 +98,6 @@ if st.session_state.messages[-1]["role"] != "assistant":
                             st.write(node.get_content())
                         st.write(f"Score: {node.score}")
                     with col2:
-                        # displayPDF(node.metadata['file_path'])
-                        # displayPDF(source_node.metadata['filename'])
                         displayImageinPDF(node)
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message) # Add response to message history

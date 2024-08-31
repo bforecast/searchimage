@@ -9,7 +9,6 @@ try_*
 .vscode
 .venv
 *.jpg
-*.pdf
 .env
 *.png
 chroma_db

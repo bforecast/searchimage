@@ -31,13 +31,17 @@ def get_files_with_type(directory):
 def run():
     st.title("Extract Image pdfs to Document, Build Document Agent for each Document.")
     st.subheader('Made with ❤️ by Ruan')
-    iPdf_path =  os.path.join(cwd, "image_pdf")
+    iPdf_path = os.path.join(cwd, "image_pdf")
     file_types = get_files_with_type(iPdf_path)
     st.write(file_types)
+    
     if st.button("Extract and Save"):
-            iPdf = iPdfRAG()
-            num_docs = iPdf.load(iPdf_path)
-            if num_docs:
-                st.success(f"Save {num_docs} pdfs to llamaindex base.")
+        iPdf = iPdfRAG()
+        progress_text = st.empty()
+        
+        for progress in iPdf.load(iPdf_path):
+            progress_text.text(progress)
+        
+        st.success("Processing completed!")
 
 run()

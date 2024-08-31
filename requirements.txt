@@ -11,3 +11,5 @@ llama_index-embeddings-huggingface
 llama-index-vector-stores-chroma
 openai
 llama-index-graph-stores-neo4j
+unstructured[pdf]
+unstructured.PaddleOCR
