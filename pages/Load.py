@@ -3,6 +3,7 @@ import os
 import mimetypes
 from dotenv import load_dotenv
 from utils.llamaindex import iPdfRAG
+from utils.global_functions import load_data
 
 load_dotenv()
 cwd = os.getcwd()
@@ -36,7 +37,8 @@ def run():
     st.write(file_types)
     
     if st.button("Extract and Save"):
-        iPdf = iPdfRAG()
+        iPdf = load_data()
+
         progress_text = st.empty()
         
         for progress in iPdf.load(iPdf_path):

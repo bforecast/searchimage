@@ -3,6 +3,7 @@ import fitz  # Install with: pip install pymupdf
 import io
 from PIL import Image
 from utils.llamaindex import iPdfRAG
+from utils.global_functions import load_data
 
 def displayImageinPDF(node):
     img_byte = imageFromPdf(
@@ -61,31 +62,23 @@ if "messages" not in st.session_state.keys(): # Initialize the chat messages his
         {"role": "assistant", "content": "Ask me a question about the library!"}
     ]
 
-@st.cache_resource(show_spinner=False)
-def load_data():
-    with st.spinner(text="Loading and indexing the Streamlit docs – hang tight! This should take 1-2 minutes."):
-        pdf_base = iPdfRAG()
-        return pdf_base
-
 pdf_base = load_data()
-##Chat-Bot Mode
-if "chat_engine" not in st.session_state.keys(): # Initialize the chat engine
-    st.session_state.chat_engine = pdf_base.vector_index.as_chat_engine(verbose=True,)
-
-if prompt := st.chat_input("Your question"): # Prompt for user input and save to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-for message in st.session_state.messages: # Display the prior chat messages
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
-# If last message is not from assistant, generate a new response
-if st.session_state.messages[-1]["role"] != "assistant":
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            response = st.session_state.chat_engine.chat(prompt)
-            st.write(response.response)
-            st.write("reference:")
+##Query-Search Mode
+col1,col2 = st.columns([9, 1])
+with col1:
+    query = st.text_input("What would you like to ask?",value="I want to develop a product in washing and lye peeling of fruits. provide the composition ingredients and similiar products name")
+with col2:
+    top_k = st.slider("Top-K", value=3, max_value=100)
+if st.button("Search"):
+    if not query.strip():
+        st.error(f"Please provide the search query.")
+    else:
+        st.write(f"Question: {query}")
+        st.write("Answer:")
+        response = pdf_base.vector_query(query, top_k)
+        st.success(response)
+        if len(response.source_nodes) > 0:
+            st.write("For reference:")
             for idx, node in enumerate(response.source_nodes):
                 if "filename" in node.metadata:
                     col0, col1, col2 = st.columns([0.1,2,1])
@@ -98,6 +91,40 @@ if st.session_state.messages[-1]["role"] != "assistant":
                             st.write(node.get_content())
                         st.write(f"Score: {node.score}")
                     with col2:
+                        # displayPDF(node.metadata['file_path'])
+                        # displayPDF(source_node.metadata['filename'])
                         displayImageinPDF(node)
-            message = {"role": "assistant", "content": response.response}
-            st.session_state.messages.append(message) # Add response to message history
+
+##Chat-Bot Mode
+# if "chat_engine" not in st.session_state.keys(): # Initialize the chat engine
+#     st.session_state.chat_engine = pdf_base.vector_index.as_chat_engine(verbose=False, )
+
+# if prompt := st.chat_input("Your question"): # Prompt for user input and save to chat history
+#     st.session_state.messages.append({"role": "user", "content": prompt})
+
+# for message in st.session_state.messages: # Display the prior chat messages
+#     with st.chat_message(message["role"]):
+#         st.write(message["content"])
+
+# # If last message is not from assistant, generate a new response
+# if st.session_state.messages[-1]["role"] != "assistant":
+#     with st.chat_message("assistant"):
+#         with st.spinner("Thinking..."):
+#             response = st.session_state.chat_engine.chat(prompt)
+#             st.write(response.response)
+#             st.write("reference:")
+#             for idx, node in enumerate(response.source_nodes):
+#                 if "filename" in node.metadata:
+#                     col0, col1, col2 = st.columns([0.1,2,1])
+#                     with col0:
+#                         st.write(f"{idx+1}." )
+#                     with col1:
+#                         if all(tag in node.get_content() for tag in ['<table>', '<tr>', '<td>']):
+#                             st.html(node.get_content())
+#                         else:
+#                             st.write(node.get_content())
+#                         st.write(f"Score: {node.score}")
+#                     with col2:
+#                         displayImageinPDF(node)
+#             message = {"role": "assistant", "content": response.response}
+#             st.session_state.messages.append(message) # Add response to message history

@@ -10,6 +10,8 @@ import mimetypes
 import os
 from llama_index.core.schema import TextNode, NodeRelationship, RelatedNodeInfo
 from llama_index.llms.openai import OpenAI
+from llama_index.llms.ollama import Ollama
+import pandas as pd
 
 def get_files_with_type(directory):
   """
@@ -33,21 +35,22 @@ def get_files_with_type(directory):
 class iPdfRAG():
     def __init__(self) -> None:
         db = chromadb.PersistentClient(path="./chroma_db")
-        chroma_collection = db.get_or_create_collection("iPdf")
-        self.vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        self.chroma_collection = db.get_or_create_collection("iPdf")
+        self.vector_store = ChromaVectorStore(chroma_collection=self.chroma_collection)
 
-        MONGO_URI = "mongodb://localhost:27017"
-        self.doc_store = MongoDocumentStore.from_uri(uri=MONGO_URI)
-        self.vector_index_store = MongoIndexStore.from_uri(uri=MONGO_URI)
+        # MONGO_URI = "mongodb://localhost:27017"
+        # self.doc_store = MongoDocumentStore.from_uri(uri=MONGO_URI)
+        # self.vector_index_store = MongoIndexStore.from_uri(uri=MONGO_URI)
 
         self.storage_context = StorageContext.from_defaults(
-            docstore=self.doc_store,
-            index_store=self.vector_index_store,
+            # docstore=self.doc_store,
+            # index_store=self.vector_index_store,
             vector_store=self.vector_store,
         )
 
-        self.llm = OpenAI(model="gpt-4o")
-        # self.llm = Ollama(model="qwen2:1.5b", request_timeout=600.0)
+        # self.llm = OpenAI(model="gpt-4o")
+        self.llm = Ollama(
+            model="llama3.2", temperature=0)
 
         self.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
         Settings.llm = self.llm
@@ -77,6 +80,7 @@ class iPdfRAG():
                 storage_context=self.storage_context,
                 vector_store=self.vector_store
             )
+            total_nodes += len(nodes)
 
         yield f"Completed: Ingested {total_nodes} Nodes from {len(nodes_store)} Files"
         return len(nodes_store)
@@ -89,7 +93,7 @@ class iPdfRAG():
     
     def _extract2nodes(self, filepath):
         # Returns a List[Element] present in the pages of the parsed pdf document
-        os.environ["OCR_AGENT"] = "paddle"
+        os.environ["OCR_AGENT"] = "unstructured.partition.utils.ocr_models.paddle_ocr.OCRAgentPaddle"
         elements = partition_pdf(filepath, 
                          infer_table_structure=True,
                          include_page_breaks=True, 
@@ -131,7 +135,7 @@ class iPdfRAG():
                     continue
             
             # append to the nodes
-            if len(el_text) > 16:
+            if len(el_text) > 1:
                 print(idx, el_text)
                 extra_info = {
                     'file_path': filepath,
@@ -140,6 +144,8 @@ class iPdfRAG():
                     'coordinates': str(el.metadata.coordinates.points),
                     'page_width' : el.metadata.coordinates.system.width,
                     'page_height' : el.metadata.coordinates.system.height,
+                    'element_idx' : idx,
+                    "element_category" : el.category
                 }
                 new_node = TextNode(text = el_text, extra_info = extra_info)
                 if nodeLevel == 0:
@@ -165,4 +171,60 @@ class iPdfRAG():
                 nodes.append(new_node)
         return nodes
 
+    #return the files path in the chroma library
+    def get_filepaths(self)->list:
+        files = set()
+        docs = self.chroma_collection.get()
+        for metadata in docs['metadatas']:
+            files.add(metadata['file_path'])
+        return list(files)
+    
+    #return all the nodes by filepath in the chroma library
+    def get_documentsbyfilepath(self, filepath:str)->list:
+        docs = self.chroma_collection.get(
+                            where={"file_path": filepath})
+        idxs = []
+        for metadata in docs['metadatas']:
+            idxs.append(metadata['element_idx'])
+        docs_df = pd.DataFrame({
+            "idx": idxs,
+            "documents": docs['documents']
+        })
+        return docs_df.sort_values(by='idx')['documents'].tolist()
+        
+    def ocr_correction(self, chunk: str) -> str:
+        
+        # Step 1: OCR Correction
+        ocr_correction_prompt = f"""Correct OCR-induced errors in the text, ensuring it flows coherently with the previous context. Follow these guidelines:
 
+            1. Fix OCR-induced typos and errors:
+            - Correct words split across line breaks
+            - Fix common OCR errors (e.g., 'rn' misread as 'm')
+            - Use context and common sense to correct errors
+            - Only fix clear errors, don't alter the content unnecessarily
+            - Do not add extra periods or any unnecessary punctuation
+
+            2. Maintain original structure:
+            - Keep all headings and subheadings intact
+
+            3. Preserve original content:
+            - Keep all important information from the original text
+            - Do not add any new information not present in the original text
+            - Remove unnecessary line breaks within sentences or paragraphs
+            - Maintain paragraph breaks
+            
+            4. Maintain coherence:
+            - Ensure the content connects smoothly with the previous context
+            - Handle text that starts or ends mid-sentence appropriately
+
+            IMPORTANT: Respond ONLY with the corrected text. Preserve all original formatting, including line breaks. Do not include any introduction, explanation, or metadata.
+
+            Current chunk to process:
+            {chunk}
+
+            Corrected text:
+            """
+        
+        ocr_corrected_chunk = self.llm.complete(ocr_correction_prompt, max_tokens=len(chunk) + 500)
+        
+        return ocr_corrected_chunk
